@@ -3,7 +3,7 @@
 During this study, a prototype of the effective use of a small solar power plant was created. The main idea of it was to turn on certain electrical devices when the overflow of the generated energy is forecasted. Devices should not be necessary at the moment but their operation should be beneficial, for example - charging the electrical vehicle or other electronic devices. When a solar power plant is generating more energy than the household can utilize, overflow energy is being sent to the main grid of the electricity provider for storage. When a household is experiencing an energy shortage, the same energy is being bought back at the higher price which means some part of the generated energy is being wasted during this process. During this study, the data was collected from solar inverters, historical weather API tool, and smart consumed energy meters. The study describes collected data preparation and feature engineering process that was later used to create various models. Two main parts of the created prototype are different forecasting models - one that forecasts the energy generation of a solar power plants, the other that forecasts energy consumption of a household. Both of the model types were tested with Facebook Prophet and different neural network architectures - Feed-forward, Long Short-Term Memory, and Gated Recurrent Unit networks. In addition, a baseline model was developed for forecasting energy generation. 
 
 ## Setup environment
-    conda env create -f environment.yml
+    conda env create -f environment.yaml
     conda activate Solar-Prediction
 
 ## File structure

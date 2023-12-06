@@ -4,7 +4,6 @@ from models_baseline import test_baseline
 from models_prophet import train_test_prophet
 from models_nn import train_test_nn
 
-
 if __name__ == '__main__':
     weather_df = prepare_weather_data(pd.read_csv(WEATHER_DATA, parse_dates=DATETIME_COLS), LOCATION)
     consumption_df = pd.read_csv(CONSUMPTION_DATA, parse_dates=['datetime_local'])
