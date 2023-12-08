@@ -3,6 +3,7 @@ from data_preparation import *
 from models_baseline import test_baseline
 from models_prophet import train_test_prophet
 from models_nn import train_test_nn
+from models_keras import train_test_keras
 
 if __name__ == '__main__':
     print(WEATHER_DATA)
@@ -56,12 +57,13 @@ if __name__ == '__main__':
         prep_data_dict['Last timestamp'].append(dataframes_dict[obj]['datetime_local'].max())
         prep_data_dict['Number of rows'].append(len(dataframes_dict[obj].index))
 
-    #print("Following data fetched:")
-    #print(pd.DataFrame.from_dict(fetch_data_dict).to_string(), '\n')
+    print("Following data fetched:")
+    print(pd.DataFrame.from_dict(fetch_data_dict).to_string(), '\n')
 
-    #print("Following data prepared:")
-    #print(pd.DataFrame.from_dict(prep_data_dict).to_string(), '\n')
+    print("Following data prepared:")
+    print(pd.DataFrame.from_dict(prep_data_dict).to_string(), '\n')
 
     #test_baseline()
-    train_test_prophet(dataframes_dict)
+    #train_test_prophet(dataframes_dict)
     #train_test_nn(dataframes_dict)
+    train_test_keras(dataframes_dict)

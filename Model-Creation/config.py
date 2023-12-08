@@ -12,6 +12,7 @@ DATETIME_COLS = ['datetime_unix', 'datetime_local']
 # Result files
 RESULT_FILES_LOC = "Model-Results/"
 NN_RESULTS_FILE = RESULT_FILES_LOC + 'nn_results.csv'
+KERAS_RESULTS_FILE = RESULT_FILES_LOC + 'keras_results.csv'
 PROPHET_RESULTS_FILE = RESULT_FILES_LOC + 'prophet_results.csv'
 BASELINE_RESULTS_FILE = RESULT_FILES_LOC + 'baseline_results.csv'
 
