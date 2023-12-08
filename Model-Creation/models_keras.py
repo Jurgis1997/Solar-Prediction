@@ -25,7 +25,6 @@ def train_test_keras(dataframes_dict: dict):
             target = CON_TARGET_COLUMN
         else:
             raise ValueError('Unknown target!')
-
         dataset = get_keras_dataset(dataframes_dict[object_name].copy(), TESTING_INTERVALS, target)
 
         # Normalize the data
