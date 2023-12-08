@@ -5,6 +5,7 @@ from models_prophet import train_test_prophet
 from models_nn import train_test_nn
 
 if __name__ == '__main__':
+    print(WEATHER_DATA)
     weather_df = prepare_weather_data(pd.read_csv(WEATHER_DATA, parse_dates=DATETIME_COLS), LOCATION)
     consumption_df = pd.read_csv(CONSUMPTION_DATA, parse_dates=['datetime_local'])
 
@@ -55,12 +56,12 @@ if __name__ == '__main__':
         prep_data_dict['Last timestamp'].append(dataframes_dict[obj]['datetime_local'].max())
         prep_data_dict['Number of rows'].append(len(dataframes_dict[obj].index))
 
-    print("Following data fetched:")
-    print(pd.DataFrame.from_dict(fetch_data_dict).to_string(), '\n')
+    #print("Following data fetched:")
+    #print(pd.DataFrame.from_dict(fetch_data_dict).to_string(), '\n')
 
-    print("Following data prepared:")
-    print(pd.DataFrame.from_dict(prep_data_dict).to_string(), '\n')
+    #print("Following data prepared:")
+    #print(pd.DataFrame.from_dict(prep_data_dict).to_string(), '\n')
 
-    test_baseline()
+    #test_baseline()
     train_test_prophet(dataframes_dict)
-    train_test_nn(dataframes_dict)
+    #train_test_nn(dataframes_dict)
