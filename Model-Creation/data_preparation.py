@@ -5,7 +5,8 @@ from pvlib.location import Location
 from feature_encodings import *
 from scaler import CustomScaler
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
+from tensorflow.keras.preprocessing.sequence import TimeseriesGenerator
+
 
 _DATETIME_COLUMN = 'datetime_local'
 
@@ -38,12 +39,12 @@ class Dataset_Prophet:
         self.df_test = None
 
 class Dataset_Keras:
-    def __init__(self):
-        self.x_train = None
-        self.y_train = None
-        self.x_test = None
-        self.y_test = None
+    def __init__(self, train_generator=None, test_generator=None):
+        self.train_generator = train_generator
+        self.test_generator = test_generator
         self.num_features = None
+
+
 
 
 def prepare_weather_data(df: pd.DataFrame, location: Location):
@@ -181,52 +182,40 @@ def get_prophet_dataset(df: pd.DataFrame, testing_intervals: list, target: str) 
     dataset.df_test = df.loc[df['is_testing']]
     return dataset
 
-
-def get_keras_dataset(df: pd.DataFrame, testing_intervals: list, sequence_len: int, target: str) -> Dataset_Keras:
+def get_keras_dataset(df: pd.DataFrame, testing_intervals: list, target: str) -> Dataset_Keras:
     columns_to_drop = _COLS_TO_DROP.copy()
 
-    # Add any additional columns to drop for Keras dataset preparation
+    if target == 'consumption':
+        columns_to_drop.extend(_COLS_TO_DROP_CONSUMPTION)
 
-    scaler = MinMaxScaler()
-    df = scaler.fit_transform(df, columns_to_drop)
+    if target == 'generation':
+        columns_to_drop.extend(_COLS_TO_DROP_GENERATION)
 
-    x, y = [], []
+    columns_to_drop.remove(_DATETIME_COLUMN)
 
-    # Distribute the data using the sliding window method
-    columns_to_drop.append(target)
-    print("drop col", columns_to_drop)
-    for end_dt in df[_DATETIME_COLUMN].tolist():
-        start_dt = end_dt - pd.DateOffset(hours=sequence_len - 1)
-        current_seq_df = df.loc[(df[_DATETIME_COLUMN] >= start_dt) & (df[_DATETIME_COLUMN] <= end_dt)]
+    df = df.rename(columns={'datetime_local': _DATETIME_COLUMN, 'generation': 'y'})
+    df = df.drop(columns_to_drop, axis=1)
+    df['is_testing'] = False
 
-        if len(current_seq_df.index) == sequence_len:
-            is_testing = False
-            current_date = end_dt.replace(hour=0, minute=0, second=0)
+    for start_date, end_date in testing_intervals:
+        df.loc[(df[_DATETIME_COLUMN].dt.date >= start_date) & (
+                df[_DATETIME_COLUMN].dt.date <= end_date), 'is_testing'] = True
 
-            for start_date, end_date in testing_intervals:
-                if start_date <= current_date <= end_date:
-                    is_testing = True
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    df_scaled = scaler.fit_transform(df[['y']])
 
-            if is_testing:
-                x.append(current_seq_df.drop(columns_to_drop, axis=1).to_numpy())
-                y.append(current_seq_df[target].iloc[-1])
+    train_data = df_scaled[df['is_testing'] == False]
+    test_data = df_scaled[df['is_testing']]
 
-    x = np.asarray(x)
-    y = np.asarray(y)
+    # Assuming 'y' is the target column index
+    target_col_index = df.columns.get_loc('y')
 
-    if sequence_len == 1:
-        x = x.reshape(x.shape[0], x.shape[2])
+    train_generator = TimeseriesGenerator(train_data, train_data[:, target_col_index], batch_size=1)
 
-    print("Dataframe len: ", len(df.index))
-    print("x shape: ", x.shape)
-    print("y shape: ", y.shape)
+    test_generator = TimeseriesGenerator(test_data, test_data[:, target_col_index], batch_size=1)
 
-    # Split into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
-    dataset = Dataset_Keras()
-    dataset.x_train, dataset.x_test = x_train, x_test
-    dataset.y_train, dataset.y_test = y_train, y_test
-    dataset.num_features = x_train.shape[1] if sequence_len == 1 else x_train.shape[2]
+    dataset = Dataset_Keras(train_generator=train_generator, test_generator=test_generator)
+    dataset.num_features = train_data.shape[1] - 1  # Excluding the target column
 
     return dataset
+
